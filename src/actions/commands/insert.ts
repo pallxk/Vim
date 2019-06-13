@@ -198,7 +198,7 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
     const originalText = TextEditor.getLineAt(position).text;
     const indentationWidth = TextEditor.getIndentationLevel(originalText);
     const tabSize = configuration.tabstop || Number(vimState.editor.options.tabSize);
-    const newIndentationWidth = (indentationWidth / tabSize + 1) * tabSize;
+    const newIndentationWidth = Math.floor(indentationWidth / tabSize + 1) * tabSize;
 
     vimState.recordedState.transformations.push({
       type: 'replaceText',
@@ -463,7 +463,7 @@ class CommandDeleteIndentInCurrentLine extends BaseCommand {
     }
 
     const tabSize = configuration.tabstop;
-    const newIndentationWidth = (indentationWidth / tabSize - 1) * tabSize;
+    const newIndentationWidth = Math.ceil(indentationWidth / tabSize - 1) * tabSize;
 
     await TextEditor.replace(
       new vscode.Range(position.getLineBegin(), position.getLineEnd()),
