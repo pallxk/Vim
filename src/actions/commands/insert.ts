@@ -199,13 +199,15 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
     const indentationWidth = TextEditor.getIndentationLevel(originalText);
     const tabSize = configuration.tabstop || Number(vimState.editor.options.tabSize);
     const newIndentationWidth = Math.floor(indentationWidth / tabSize + 1) * tabSize;
+    const insertTabAsSpaces = configuration.expandtab;
+    const charDiff = (newIndentationWidth - indentationWidth) / (insertTabAsSpaces ? 1 : tabSize);
 
     vimState.recordedState.transformations.push({
       type: 'replaceText',
       text: TextEditor.setIndentationLevel(originalText, newIndentationWidth),
       start: position.getLineBegin(),
       end: position.getLineEnd(),
-      diff: new PositionDiff(0, newIndentationWidth - indentationWidth),
+      diff: new PositionDiff(0, charDiff),
     });
 
     return vimState;
@@ -464,6 +466,8 @@ class CommandDeleteIndentInCurrentLine extends BaseCommand {
 
     const tabSize = configuration.tabstop;
     const newIndentationWidth = Math.ceil(indentationWidth / tabSize - 1) * tabSize;
+    const insertTabAsSpaces = configuration.expandtab;
+    const charDiff = (newIndentationWidth - indentationWidth) / (insertTabAsSpaces ? 1 : tabSize);
 
     await TextEditor.replace(
       new vscode.Range(position.getLineBegin(), position.getLineEnd()),
@@ -474,10 +478,7 @@ class CommandDeleteIndentInCurrentLine extends BaseCommand {
     );
 
     const cursorPosition = Position.FromVSCodePosition(
-      position.with(
-        position.line,
-        position.character + (newIndentationWidth - indentationWidth) / tabSize
-      )
+      position.with(position.line, position.character + charDiff)
     );
     vimState.cursorStopPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
